@@ -93,6 +93,12 @@ void loop()
 
         //Stop moving at all.
       }
+      else if (strcmp(buff, "Disconnect") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Do nothing, but that's ok.
+      }
       else
       {
         Serial.write(Bad, BAD_LEN);
