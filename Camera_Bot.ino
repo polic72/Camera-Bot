@@ -1,40 +1,120 @@
-/* Example sketch to control a 28BYJ-48 stepper motor with ULN2003 driver board and Arduino UNO. More info: https://www.makerguides.com */
-// Include the Arduino Stepper.h library:
-#include <Stepper.h>
+//#include <stdio.h>
+
+#define BUFFER_SIZE 64
+
+char buff[BUFFER_SIZE];
 
 
-// Define number of steps per rotation:
-const int stepsPerRevolution = 2048;
+#define OK_LEN 3
+#define BAD_LEN 4
+
+char Ok[] = {'O', 'k', '|'};
+char Bad[] = {'B', 'a', 'd', '|'};
 
 
-// Wiring:
-// Pin 8 to IN1 on the ULN2003 driver
-// Pin 9 to IN2 on the ULN2003 driver
-// Pin 10 to IN3 on the ULN2003 driver
-// Pin 11 to IN4 on the ULN2003 driver
-// Create stepper object called 'myStepper', note the pin order:
-Stepper myStepper = Stepper(stepsPerRevolution, 8, 10, 9, 11);
+char letter;
+int counter;
+
 
 void setup()
 {
-  // Set the speed to 5 rpm:
-  myStepper.setSpeed(5);
-  
-  // Begin Serial communication at a baud rate of 9600:
+  //Begin Serial communication at a baud rate of 9600:
   Serial.begin(9600);
+
+  counter = 0;
 }
 
 
 void loop()
 {
-  byte test = Serial.read();
+  if (Serial.available() > 0)
+  {
+    letter = Serial.read();
+
+    if (letter == '\n' || letter == '\r')
+    {
+      return;
+    }
+    else if (letter == '|')
+    {
+      addToBuffer('\0');
+      
+      if (strcmp(buff, "Up") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Move up.
+      }
+      else if (strcmp(buff, "Down") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Move down.
+      }
+      else if (strcmp(buff, "Left") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Move left.
+      }
+      else if (strcmp(buff, "Right") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Move right.
+      }
+      else if (strcmp(buff, "StopUp") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Stop moving up.
+      }
+      else if (strcmp(buff, "StopDown") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Stop moving down.
+      }
+      else if (strcmp(buff, "StopLeft") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Stop moving left.
+      }
+      else if (strcmp(buff, "StopRight") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Stop moving right.
+      }
+      else if (strcmp(buff, "Stop") == 0)
+      {
+        Serial.write(Ok, OK_LEN);
+
+        //Stop moving at all.
+      }
+      else
+      {
+        Serial.write(Bad, BAD_LEN);
+      }
+
+      counter = 0;
+    }
+    else
+    {
+      addToBuffer(letter);
+    }
+  }
+}
+
+
+//Adds a character to the buffer.
+void addToBuffer(char c)
+{
+  if (counter >= 64)
+  {
+    counter = 0;
+  }
   
-  if (test == 97)
-  {
-    myStepper.step(stepsPerRevolution); 
-  }
-  else if (test == 98)
-  {
-    myStepper.step(-stepsPerRevolution);
-  }
+  buff[counter++] = c;
 }
