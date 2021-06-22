@@ -1,5 +1,22 @@
 //#include <stdio.h>
 
+#define PWM_A 10
+#define PWM_B 11
+
+#define PWM_SPEED 52
+
+
+#define PIN_A1 2
+#define PIN_A2 3
+
+#define PIN_B1 4
+#define PIN_B2 5
+
+
+#define STOP_DELAY 40
+
+
+
 #define BUFFER_SIZE 64
 
 char buff[BUFFER_SIZE];
@@ -18,6 +35,22 @@ int counter;
 
 void setup()
 {
+  //PWM
+  pinMode(PWM_A, OUTPUT);
+  pinMode(PWM_B, OUTPUT);
+
+  analogWrite(PWM_A, PWM_SPEED);
+  analogWrite(PWM_B, PWM_SPEED);
+
+
+  //Motor
+  pinMode(PIN_A1, OUTPUT);
+  pinMode(PIN_A2, OUTPUT);
+
+  pinMode(PIN_B1, OUTPUT);
+  pinMode(PIN_B2, OUTPUT);
+
+  
   //Begin Serial communication at a baud rate of 9600:
   Serial.begin(9600);
 
@@ -43,55 +76,84 @@ void loop()
       {
         Serial.write(Ok, OK_LEN);
 
-        //Move up.
+        digitalWrite(PIN_A1, HIGH);
+        digitalWrite(PIN_A2, LOW);
       }
       else if (strcmp(buff, "Down") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Move down.
+        digitalWrite(PIN_A1, LOW);
+        digitalWrite(PIN_A2, HIGH);
       }
       else if (strcmp(buff, "Left") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Move left.
+        digitalWrite(PIN_B1, HIGH);
+        digitalWrite(PIN_B2, LOW);
       }
       else if (strcmp(buff, "Right") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Move right.
+        digitalWrite(PIN_B1, LOW);
+        digitalWrite(PIN_B2, HIGH);
       }
       else if (strcmp(buff, "StopUp") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Stop moving up.
+        digitalWrite(PIN_A1, LOW);
+        digitalWrite(PIN_A2, HIGH);
+
+        delay(STOP_DELAY);
+
+        digitalWrite(PIN_A1, LOW);
+        digitalWrite(PIN_A2, LOW);
       }
       else if (strcmp(buff, "StopDown") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Stop moving down.
+        digitalWrite(PIN_A1, HIGH);
+        digitalWrite(PIN_A2, LOW);
+
+        delay(STOP_DELAY);
+
+        digitalWrite(PIN_A1, LOW);
+        digitalWrite(PIN_A2, LOW);
       }
       else if (strcmp(buff, "StopLeft") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Stop moving left.
+        digitalWrite(PIN_B1, LOW);
+        digitalWrite(PIN_B2, HIGH);
+
+        delay(STOP_DELAY);
+
+        digitalWrite(PIN_B1, LOW);
+        digitalWrite(PIN_B2, LOW);
       }
       else if (strcmp(buff, "StopRight") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
-        //Stop moving right.
+        digitalWrite(PIN_B1, HIGH);
+        digitalWrite(PIN_B2, LOW);
+
+        delay(STOP_DELAY);
+
+        digitalWrite(PIN_B1, LOW);
+        digitalWrite(PIN_B2, LOW);
       }
       else if (strcmp(buff, "Stop") == 0)
       {
         Serial.write(Ok, OK_LEN);
 
         //Stop moving at all.
+        //Put all PINs to LOW and set STBY to LOW.
       }
       else if (strcmp(buff, "Disconnect") == 0)
       {
