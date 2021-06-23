@@ -3,17 +3,27 @@
 #define PWM_A 10
 #define PWM_B 11
 
-#define PWM_SPEED 52
+#define PWM_SPEED_A 40
+#define PWM_SPEED_B 52
+
+#define PWM_SPEED_BRAKE 24
 
 
-#define PIN_A1 2
-#define PIN_A2 3
+#define PIN_A1 4
+#define PIN_A2 5
 
-#define PIN_B1 4
-#define PIN_B2 5
+#define PIN_B1 6
+#define PIN_B2 7
 
 
 #define STOP_DELAY 40
+
+
+#define ENCODER_A1 7
+#define ENCODER_A2 6
+
+#define ENCODER_B1 5
+#define ENCODER_B2 4
 
 
 
@@ -33,14 +43,18 @@ char letter;
 int counter;
 
 
+bool is_moving = false;
+bool last_is_moving = false;
+
+
 void setup()
 {
   //PWM
   pinMode(PWM_A, OUTPUT);
   pinMode(PWM_B, OUTPUT);
 
-  analogWrite(PWM_A, PWM_SPEED);
-  analogWrite(PWM_B, PWM_SPEED);
+  analogWrite(PWM_A, PWM_SPEED_BRAKE);  //The bot starts not moving.
+  analogWrite(PWM_B, PWM_SPEED_BRAKE);
 
 
   //Motor
@@ -49,6 +63,14 @@ void setup()
 
   pinMode(PIN_B1, OUTPUT);
   pinMode(PIN_B2, OUTPUT);
+
+
+  //Encoder
+  pinMode(ENCODER_A1, INPUT);
+  pinMode(ENCODER_A2, INPUT);
+
+  pinMode(ENCODER_B1, INPUT);
+  pinMode(ENCODER_B2, INPUT);
 
   
   //Begin Serial communication at a baud rate of 9600:
@@ -63,6 +85,7 @@ void loop()
   if (Serial.available() > 0)
   {
     letter = Serial.read();
+    
 
     if (letter == '\n' || letter == '\r')
     {
@@ -76,6 +99,8 @@ void loop()
       {
         Serial.write(Ok, OK_LEN);
 
+        setMoving(true);
+
         digitalWrite(PIN_A1, HIGH);
         digitalWrite(PIN_A2, LOW);
       }
@@ -85,6 +110,8 @@ void loop()
 
         digitalWrite(PIN_A1, LOW);
         digitalWrite(PIN_A2, HIGH);
+
+        setMoving(true);
       }
       else if (strcmp(buff, "Left") == 0)
       {
@@ -92,6 +119,8 @@ void loop()
 
         digitalWrite(PIN_B1, HIGH);
         digitalWrite(PIN_B2, LOW);
+
+        setMoving(true);
       }
       else if (strcmp(buff, "Right") == 0)
       {
@@ -99,6 +128,8 @@ void loop()
 
         digitalWrite(PIN_B1, LOW);
         digitalWrite(PIN_B2, HIGH);
+
+        setMoving(true);
       }
       else if (strcmp(buff, "StopUp") == 0)
       {
@@ -111,6 +142,8 @@ void loop()
 
         digitalWrite(PIN_A1, LOW);
         digitalWrite(PIN_A2, LOW);
+
+        setMoving(false);
       }
       else if (strcmp(buff, "StopDown") == 0)
       {
@@ -123,6 +156,8 @@ void loop()
 
         digitalWrite(PIN_A1, LOW);
         digitalWrite(PIN_A2, LOW);
+
+        setMoving(false);
       }
       else if (strcmp(buff, "StopLeft") == 0)
       {
@@ -135,6 +170,8 @@ void loop()
 
         digitalWrite(PIN_B1, LOW);
         digitalWrite(PIN_B2, LOW);
+
+        setMoving(false);
       }
       else if (strcmp(buff, "StopRight") == 0)
       {
@@ -147,6 +184,8 @@ void loop()
 
         digitalWrite(PIN_B1, LOW);
         digitalWrite(PIN_B2, LOW);
+
+        setMoving(false);
       }
       else if (strcmp(buff, "Stop") == 0)
       {
@@ -154,6 +193,7 @@ void loop()
 
         //Stop moving at all.
         //Put all PINs to LOW and set STBY to LOW.
+        setMoving(false);
       }
       else if (strcmp(buff, "Disconnect") == 0)
       {
@@ -173,6 +213,58 @@ void loop()
       addToBuffer(letter);
     }
   }
+  else
+  {
+    if (!is_moving && last_is_moving)
+    {
+      digitalWrite(PIN_A1, HIGH);
+      digitalWrite(PIN_A2, HIGH);
+  
+      digitalWrite(PIN_B1, HIGH);
+      digitalWrite(PIN_B2, HIGH);
+
+      last_is_moving = false;
+    }
+    else if (is_moving && !last_is_moving)
+    {
+      last_is_moving = true;
+    }
+
+
+
+
+
+
+
+    
+//    int state = digitalRead(ENCODER_A1);
+//
+//    if (state == HIGH)
+//    {
+//      counter
+//    }
+
+
+    
+//    digitalWrite(PIN_A1, HIGH);
+//    digitalWrite(PIN_A2, LOW);
+//
+//    digitalWrite(PIN_B1, HIGH);
+//    digitalWrite(PIN_B2, LOW);
+//
+//
+//    delay(STOP_DELAY / 16);
+//    
+//
+//    digitalWrite(PIN_A1, LOW);
+//    digitalWrite(PIN_A2, HIGH);
+//
+//    digitalWrite(PIN_B1, LOW);
+//    digitalWrite(PIN_B2, HIGH);
+//
+//
+//    delay(STOP_DELAY / 16);
+  }
 }
 
 
@@ -186,3 +278,24 @@ void addToBuffer(char c)
   
   buff[counter++] = c;
 }
+
+
+//Sets whether or not the bot is currently moving.
+void setMoving(bool moving)
+{
+  if (moving)
+  {
+    analogWrite(PWM_A, PWM_SPEED_A);
+    analogWrite(PWM_B, PWM_SPEED_B);
+    
+    is_moving = true;
+  }
+  else
+  {
+    analogWrite(PWM_A, PWM_SPEED_BRAKE);
+    analogWrite(PWM_B, PWM_SPEED_BRAKE);
+
+    is_moving = false;
+  }
+}
+
